@@ -1,0 +1,11 @@
+{
+  "name": "apitite-mongodb-webinar",
+  "version": "0.0.1",
+  "dependencies": {
+    "moment": "^2.10.2",
+    "mongodb": "1.4.30",
+    "q": "1.x",
+    "underscore": "1.6.x",
+    "randgen": "^0.1.0"
+  }
+}
