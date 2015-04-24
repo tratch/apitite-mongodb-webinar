@@ -1,87 +1,102 @@
 $(document).ready(function() {
 
-  var ctx = $('#chart')[0].getContext('2d');
+  var chart = null;
 
-  $('button[type=submit]').on('click', function() {
-    var month = $('[name=month]').val(),
-        firstYear = $('[name=first-year]').val(),
-        secondYear = $('[name=second-year]').val();
+  var onSubmitClick = function() {
 
-    var firstYearStart = firstYear + '-' + month + '-01';
-    var firstYearEnd;
-    if (parseInt(month, 10) < 12) {
-      firstYearEnd = firstYear + '-' + (parseInt(month, 10) + 1) + '-01';
-    } else {
-      firstYearEnd = (parseInt(firstYear, 10) + 1) + '-01-01';
-    }
+    var monthStr = $('[name=month]').val(),
+        firstYearStr = $('[name=first-year]').val(),
+        secondYearStr = $('[name=second-year]').val(),
+        category = $('[name=category]:checked').val();
 
-    var secondYearStart = secondYear + '-' + month + '-01';
-    var secondYearEnd;
-    if (parseInt(month, 10) < 12) {
-      secondYearEnd = secondYear + '-' + (parseInt(month, 10) + 1) + '-01';
-    } else {
-      secondYearEnd = (parseInt(secondYear, 10) + 1) + '-01-01';
-    }
-
-    var firstYearResults = null;
-    var secondYearResults = null;
-    
-    $.ajax('https://www.apitite.net/api/mongodb-webinar/orders-grouped-by-day/json?' + $.param({ start: firstYearStart, end: firstYearEnd }), {
-      type: 'GET',
-      success: function(result) {
-        firstYearResults = result;
-        if (firstYearResults && secondYearResults) {
-          drawChart(firstYear, firstYearResults, secondYear, secondYearResults);
-        }
-      }
+    var firstYearParams = $.param({
+      start: getStart(firstYearStr, monthStr),
+      end: getEnd(firstYearStr, monthStr)
     });
 
-    $.ajax('https://www.apitite.net/api/mongodb-webinar/orders-grouped-by-day/json?' + $.param({ start: secondYearStart, end: secondYearEnd }), {
-      type: 'GET',
-      success: function(result) {
-        secondYearResults = result;
-        if (firstYearResults && secondYearResults) {
-          drawChart(firstYearResults, secondYearResults);
-        }
+    var secondYearParams = $.param({
+      start: getStart(secondYearStr, monthStr),
+      end: getEnd(secondYearStr, monthStr)
+    });
+
+    var firstYearData = null,
+        secondYearData = null;
+
+    var firstDeferred = $.ajax('https://www.apitite.net/api/mongodb-webinar/orders-grouped-by-day/json?' + firstYearParams);
+    var secondDeferred = $.ajax('https://www.apitite.net/api/mongodb-webinar/orders-grouped-by-day/json?' + secondYearParams);
+
+    $.when(firstDeferred, secondDeferred).done(function(firstYearResults, secondYearResults) {
+      var firstYearData = firstYearResults[0],
+          secondYearData = secondYearResults[0];
+
+      if (chart) {
+        updateChart(category, firstYearStr, firstYearData, secondYearStr, secondYearData);
+      } else {
+        drawChart(category, firstYearStr, firstYearData, secondYearStr, secondYearData);
       }
     });
 
     return false;
-  });
+  };
 
-  var drawChart = function(firstYear, firstYearResults, secondYear, secondYearResults) {
-
-    var firstYearData = _.pluck(firstYearResults, 'orders');
-    var secondYearData = _.pluck(secondYearResults, 'orders');
+  var drawChart = function(category, firstYearStr, firstYearData, secondYearStr, secondYearData) {
+    var ctx = $('#chart')[0].getContext('2d');
     
     var data = {
-      labels: _.range(1, firstYearResults.length + 1),
+      labels: _.range(1, firstYearData.length + 1),
       datasets: [
         {
-          label: firstYear,
+          label: firstYearStr,
           fillColor: "rgba(220,220,220,0.2)",
           strokeColor: "rgba(220,220,220,1)",
           pointColor: "rgba(220,220,220,1)",
           pointStrokeColor: "#fff",
           pointHighlightFill: "#fff",
           pointHighlightStroke: "rgba(220,220,220,1)",
-          data: firstYearData
+          data: _.pluck(firstYearData, category)
         },
         {
-          label: secondYear,
+          label: secondYearStr,
           fillColor: "rgba(151,187,205,0.2)",
           strokeColor: "rgba(151,187,205,1)",
           pointColor: "rgba(151,187,205,1)",
           pointStrokeColor: "#fff",
           pointHighlightFill: "#fff",
           pointHighlightStroke: "rgba(151,187,205,1)",
-          data: secondYearData
+          data: _.pluck(secondYearData, category)
         }
       ]
     };
 
-    var chart = new Chart(ctx).Line(data);
-
+    chart = new Chart(ctx).Line(data);
   };
+
+  var updateChart = function(category, firstYearStr, firstYearData, secondYearStr, secondYearData) {
+    var firstYearValues = _.pluck(firstYearData, category);
+    var secondYearValues = _.pluck(secondYearData, category);
+
+    for (var i = 0; i < firstYearValues.length; i++) {
+      chart.datasets[0].points[i].value = firstYearValues[i];
+      chart.datasets[1].points[i].value = secondYearValues[i];
+    }
+
+    chart.update();
+  };
+
+  var getStart = function(yearStr, monthStr) {
+    // return YYYY-MM-DD
+    return yearStr + '-' + monthStr + '-01';
+  };
+
+  var getEnd = function(yearStr, monthStr) {
+    var month = parseInt(monthStr, 10),
+        year = parseInt(yearStr, 10);
+    if (month < 12)
+      return yearStr + '-' + ('0' + (month+1)).slice(-2) + '-01';
+    else
+      return (year+1) + '-01-01';
+  };
+
+  $('button[type=submit]').on('click', onSubmitClick);
 
 });

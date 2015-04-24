@@ -61,18 +61,41 @@
                 <option>2013</option>
               </select>
             </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="category" value="orders" checked />
+                Orders
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="category" value="revenue" />
+                Revenue
+              </label>
+            </div>
             <button type="submit" class="btn btn-primary">Compare</button>
           </form>
         </div>
       </div>
 
+      <br />
+
       <div class="row">
         <div class="col-md-12">
-          <canvas id="chart" width="1000px" height="600px"></canvas>
+          <divi id="legend" class="pull-right"></div>
+          <canvas id="chart" width="1170px" height="600px"></canvas>
         </div>
       </div>
 
     </div>
+
+    <script id="legend-template" type="text/html">
+      <% for (var i = 0; i < datasets.length; i++) { %>
+        <div style="width: 50px; background-color: <%= datasets[i].strokeColor %>">
+          <span><%= datasets[i].label %></span>
+        </div>
+      <% } %>
+    </script>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
