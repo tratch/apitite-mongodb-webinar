@@ -22,8 +22,8 @@ $(document).ready(function() {
     var firstYearData = null,
         secondYearData = null;
 
-    var firstDeferred = $.ajax('https://www.apitite.net/api/mongodb-webinar/orders-grouped-by-day/json?' + firstYearParams);
-    var secondDeferred = $.ajax('https://www.apitite.net/api/mongodb-webinar/orders-grouped-by-day/json?' + secondYearParams);
+    var firstDeferred = $.ajax('https://www.apitite.net/api/webinar-template/get-orders-by-day/json?' + firstYearParams);
+    var secondDeferred = $.ajax('https://www.apitite.net/api/webinar-template/get-orders-by-day/json?' + secondYearParams);
 
     $.when(firstDeferred, secondDeferred).done(function(firstYearResults, secondYearResults) {
       var firstYearData = firstYearResults[0],
