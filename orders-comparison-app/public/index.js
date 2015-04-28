@@ -19,9 +19,6 @@ $(document).ready(function() {
       end: getEnd(secondYearStr, monthStr)
     });
 
-    var firstYearData = null,
-        secondYearData = null;
-
     var firstDeferred = $.ajax('https://www.apitite.net/api/webinar-template/get-orders-by-day/json?' + firstYearParams);
     var secondDeferred = $.ajax('https://www.apitite.net/api/webinar-template/get-orders-by-day/json?' + secondYearParams);
 
