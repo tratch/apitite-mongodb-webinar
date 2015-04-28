@@ -24,33 +24,17 @@ $(document).ready(function() {
       end: getEnd(firstYearStr, monthStr)
     });
 
-    // Get the arguments for the second AJAX call to our API.
-    // The result will be something like: "start=2014-01-01&end=2014-02-01"
-    var secondYearParams = $.param({
-      start: getStart(secondYearStr, monthStr),
-      end: getEnd(secondYearStr, monthStr)
-    });
-
-    // Make the AJAX calls to our Apitite API. Store the handles to these AJAX calls (known as *deferreds*) becasue we will need
-    // them to extract the results.
-    var firstDeferred = $.ajax('https://www.apitite.net/api/webinar-template/get-orders-by-day/json?' + firstYearParams);
-    var secondDeferred = $.ajax('https://www.apitite.net/api/webinar-template/get-orders-by-day/json?' + secondYearParams);
-
-    // $.when waits for *both* AJAX calls to complete before executing the callback function we provide
-    $.when(firstDeferred, secondDeferred).done(function(firstYearResults, secondYearResults) {
-      // Each of the arguments to this callback is an array of the form: [data, textStatus, jqXHR].
-      // We are only interested in the data portion of each argument.
-      var firstYearData = firstYearResults[0],
-          secondYearData = secondYearResults[0];
-
-      drawChart(category, firstYearStr, firstYearData, secondYearStr, secondYearData);
+    $.ajax('https://www.apitite.net/api/webinar-template/get-orders-by-day/json?' + firstYearParams, {
+      success: function(firstYearData) {
+        drawChart(category, firstYearStr, firstYearData);
+      }
     });
 
     return false; // If we don't return false, the form is actually submitted to the server (not what we want) and the page refreshes
   };
 
   // See http://www.chartjs.org/docs/ for more information about how this function works.
-  var drawChart = function(category, firstYearStr, firstYearData, secondYearStr, secondYearData) {
+  var drawChart = function(category, firstYearStr, firstYearData) {
     // If we are redrawing the chart, we need to destroy the old one, first
     if (chart) {
       chart.destroy();
@@ -85,19 +69,20 @@ $(document).ready(function() {
           pointHighlightFill: "#fff",
           pointHighlightStroke: "rgba(220,220,220,1)",
           data: _.pluck(firstYearData, category)
-        },
-        {
-          label: secondYearStr,
-          fillColor: "rgba(151,187,205,0.2)",
-          strokeColor: "rgba(151,187,205,1)",
-          pointColor: "rgba(151,187,205,1)",
-          pointStrokeColor: "#fff",
-          pointHighlightFill: "#fff",
-          pointHighlightStroke: "rgba(151,187,205,1)",
-          data: _.pluck(secondYearData, category)
         }
       ]
     };
+
+        // {
+        //   label: secondYearStr,
+        //   fillColor: "rgba(151,187,205,0.2)",
+        //   strokeColor: "rgba(151,187,205,1)",
+        //   pointColor: "rgba(151,187,205,1)",
+        //   pointStrokeColor: "#fff",
+        //   pointHighlightFill: "#fff",
+        //   pointHighlightStroke: "rgba(151,187,205,1)",
+        //   data: ???
+        // }
 
     // Create the actual chart, and save a reference to it.
     chart = new Chart(ctx).Line(data);
