@@ -1,2 +1,2 @@
-web: sh orders-comparison-app
+web: cd orders-comparison-app
 web: node app.js
