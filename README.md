@@ -1,4 +1,4 @@
-#apitite-mongodb-webinar
+#apitite-mongodb-webinar Sample Application
 
 ## [Live Demo](https://apitite-mongodb-webinar.herokuapp.com/)
 
